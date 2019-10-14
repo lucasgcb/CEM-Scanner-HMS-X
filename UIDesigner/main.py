@@ -32,26 +32,28 @@ if __name__ == "__main__":
 
     label_erro = window.label_erro
     label_status = window.label_status
-    val_min = window.box_frequencia_min.value()
-    val_max = window.box_frequencia_max.value()
-    val_step = window.box_step.value()
-    print(val_step)
     running = threading.Event()
+    running.clear()
+    semafaro = threading.Semaphore(0)
+    print(semafaro)
     scannerThread = Thread(name='scan',target=scan,args=(label_status, label_erro,
-                                                          val_min,val_max,val_step,running))
+                                                          window,running,semafaro))
+    
+    scannerThread.start()
 
     @Slot()
     def say_hello():
      for t in threading.enumerate():
-        if t.getName() =="scan":
+        if running.is_set():
          label_erro.setText("Erro: Scan ainda em Progresso")
-     else:
-        label_status.setText("Escaneando...")
-        running.set()
-        scannerThread.start()
+         return
+     label_status.setText("Escaneando...")
+     running.set()
+     semafaro.release()
 
     @Slot()
     def stop():
+        label_erro.setText("Parando...")
         running.clear()
 
     window.botao_scan.clicked.connect(say_hello)
