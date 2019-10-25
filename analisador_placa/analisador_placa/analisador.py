@@ -27,6 +27,7 @@ def interrupt_instrument(instrument,interface):
 
 def scan(interface,running,interrupt,semafaro,detector):
     from scpiinterface import Instrument
+    import csv
     unidades = {"kHz": 1000,
                 "MHz": 1000000,
                 "GHz": 1000000000}
@@ -37,6 +38,7 @@ def scan(interface,running,interrupt,semafaro,detector):
         interface.botao_vai.setEnabled(False)
         interface.botao_parar.setEnabled(True)
         interface.botao_instrumento.setEnabled(False)
+        interface.box_nome.setEnabled(False)
         interface.label_status.setText("Escaneando...")
         interface.label_erro.setText(" ")
         
@@ -45,25 +47,37 @@ def scan(interface,running,interrupt,semafaro,detector):
         freq = interface.box_frequencia.value() * unidade
         indiceX = interface.box_dimensao_X.value()
         indiceY = interface.box_dimensao_Y.value()
-        
+   
         try:
-            instrument = Instrument(interface.box_instrumento.currentText())
-            instrument.activate_mode_receiver()
-            print("total:{}".format(indiceX*indiceY))
-            for i in range(0,indiceX):
-                if running.is_set() is False:
-                        return
-                if interrupt.is_set() is False:
-                    read_level_at_freq(instrument,freq)
-                else:
-                    print(interrupt_instrument(instrument,interface))
-                for j in range(0,indiceY):
+            fname= interface.box_nome.text()
+            with open('{}.csv'.format(fname), 'w', newline='') as csvfile:
+                spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                header = [chr(x+65) for x in range(0,indiceX)]
+                spamwriter.writerow(header)
+                
+                instrument = Instrument(interface.box_instrumento.currentText())
+                instrument.activate_mode_receiver()
+                print("total:{}".format(indiceX*indiceY))
+                progress = []
+                for i in range(0,indiceY):
+                    #interface.label_colunas.setText(" ".join(header))
+                    row = []
                     if running.is_set() is False:
-                        return
-                    if interrupt.is_set() is False:
-                        print(read_level_at_freq(instrument,freq))
-                    else:
-                        interrupt_instrument(instrument,interface)  
+                            return
+                    if interrupt.is_set():
+                        interrupt_instrument(instrument,interface)
+                    for j in range(0,indiceX):
+                        if running.is_set() is False:
+                            return
+                        if interrupt.is_set() is False:
+                            val = read_level_at_freq(instrument,freq)
+                            progress.append(str(val))
+                            row.append(val)
+                            #interface.label_linhas.setText(" ".join(progress))
+                        else:
+                            interrupt_instrument(instrument,interface)  
+                    spamwriter.writerow(row)
+                    progress.append('\n')
 
             print(instrument.hello)
             instrument_clean_up(instrument,interface,detector)
@@ -95,3 +109,4 @@ def scan(interface,running,interrupt,semafaro,detector):
         interface.botao_vai.setEnabled(True)
         interface.botao_parar.setEnabled(False)
         interface.botao_instrumento.setEnabled(True)
+        interface.box_nome.setEnabled(True)

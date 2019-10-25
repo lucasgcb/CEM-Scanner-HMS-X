@@ -11,7 +11,7 @@ __pycache__/
 main.pyproject*
 # C extensions
 *.so
-
+*.csv
 # Distribution / packaging
 .Python
 build/
