@@ -4,20 +4,18 @@ import VISAresourceExtensions
 import time
 import warnings
 
-manager = visa.ResourceManager()
-print(manager.list_resources())
-
-
 class Instrument:
     def __init__(self, resource_name=None):
+        self.manager = visa.ResourceManager()
         if resource_name is None:
             ## If none provided, get the
             ## First  resource on the list
-            id_instrument = manager.list_resources()[0]
+            
+            id_instrument = self.manager.list_resources()[0]
         else:
             id_instrument = resource_name
             
-        self.interface = manager.open_resource(id_instrument)
+        self.interface = self.manager.open_resource(id_instrument)
         self.interface.write_termination = '\n'
         self.interface.ext_clear_status()  # Clear instrument io buffers and status
         self.write('*RST;*CLS')  # Reset the instrument, clear the Error queue

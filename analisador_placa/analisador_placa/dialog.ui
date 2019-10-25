@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>389</height>
+    <width>389</width>
+    <height>412</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,6 +22,12 @@
      <height>22</height>
     </rect>
    </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>999</number>
+   </property>
   </widget>
   <widget class="QSpinBox" name="box_dimensao_Y">
    <property name="geometry">
@@ -32,6 +38,12 @@
      <height>22</height>
     </rect>
    </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>999</number>
+   </property>
   </widget>
   <widget class="QSpinBox" name="box_frequencia">
    <property name="geometry">
@@ -41,6 +53,15 @@
      <width>71</width>
      <height>22</height>
     </rect>
+   </property>
+   <property name="minimum">
+    <number>100</number>
+   </property>
+   <property name="maximum">
+    <number>1000</number>
+   </property>
+   <property name="singleStep">
+    <number>100</number>
    </property>
   </widget>
   <widget class="QComboBox" name="box_frequencia_unidade">
@@ -347,6 +368,22 @@
    </property>
    <property name="text">
     <string>ATUALIZAR</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_instrumento">
+   <property name="geometry">
+    <rect>
+     <x>286</x>
+     <y>30</y>
+     <width>71</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
  </widget>
