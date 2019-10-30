@@ -5,14 +5,66 @@ import PySide2
 import threading
 from threading import Thread, active_count
 
+from PySide2.QtCore import QAbstractTableModel
 import PySide2.QtCore as QtCore
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QMainWindow
 from PySide2.QtCore import QFile
 from PySide2.QtCore import Slot
+from PySide2.QtWidgets import QItemDelegate
 from demo import scan
 from detector import detect
 from analisador import scan
+from datetime import datetime
+
+
+class AlignDelegate(QItemDelegate):
+    def paint(self, painter, option, index):
+        option.displayAlignment = QtCore.Qt.AlignCenter
+        QItemDelegate.paint(self, painter, option, index)
+
+class MyTableModel(QtCore.QAbstractTableModel):
+    def __init__(self, parent, mylist, header, *args):
+        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+        self.mylist = mylist
+        self.header = header
+
+    def rowCount(self, parent):
+        return len(self.mylist)
+
+    def columnCount(self, parent):
+        return len(self.mylist[0])
+
+    def data(self, index, role):
+        if not index.isValid():
+            return None
+        elif role != QtCore.Qt.DisplayRole:
+            return None
+        return self.mylist[index.row()][index.column()]
+
+    def headerData(self, col, orientation, role):
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            try: 
+                return self.header[col]
+            except IndexError:
+                print("ue")
+        if orientation == QtCore.Qt.Vertical and role == QtCore.Qt.DisplayRole:
+            return str(col + 1)
+        return None
+    
+    def update_data(self, dataIn):
+        self.mylist = dataIn
+        self.dataChanged.emit(len(self.mylist[0]),len(self.mylist))
+        
+    def update_header(self, dataIn):
+        column = len(dataIn)
+        row = self.rowCount(self.parent) 
+        self.header = dataIn
+        self.beginInsertColumns(self.index(row,column), 1, len(self.header)-2)
+        
+        self.endInsertColumns()
+        self.headerDataChanged.emit(QtCore.Qt.Horizontal,len(dataIn),0)
+
 class janela(QMainWindow):
     def __init__(self):
         loader = QUiLoader()
@@ -40,18 +92,23 @@ class Gerente:
         self.janela = janela 
         self.janela.interface.show()
         self.janela.interface.botao_parar.setEnabled(False)
+        header = [chr(x+65) for x in range(0,14)]
+        data_list = [['?'] * 13 for x in range(0,13) ]
+        self.table_model = MyTableModel(janela.interface, data_list, header)
+        
         detectorThread = Thread(name='detect',target=detect,args=(window.interface,semafaro_detector,running_detector))
-        scannerThread = Thread(name='scan',target=scan,args=(window.interface,running_detector,interrupt_scanner,semafaro_scanner,semafaro_detector))
+        scannerThread = Thread(name='scan',target=scan,args=(window.interface,running_detector,interrupt_scanner,semafaro_scanner,semafaro_detector,self.table_model))
         detectorThread.start()
         scannerThread.start()
+        janela.interface.box_nome.setText("arquivo_" + datetime.now().strftime("%d-%m-%Y %H-%M-%S"))
+        janela.interface.tableView.setModel(self.table_model)
+        janela.interface.tableView.setItemDelegate(AlignDelegate())
         @Slot()
         def go():
             interrupt_scanner.clear()
             semafaro_scanner.release()
-
         @Slot()
         def stop():
-            
             self.janela.interface.label_status.setText("Interrompendo...")
             interrupt_scanner.set()
         
