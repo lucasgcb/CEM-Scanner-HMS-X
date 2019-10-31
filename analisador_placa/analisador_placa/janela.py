@@ -17,17 +17,41 @@ from detector import detect
 from analisador import scan
 from datetime import datetime
 
-
 class AlignDelegate(QItemDelegate):
+    """
+    Esta função está ligada a tabela.
+    - paint: define um estilo de alinhamento para o texto.
+    - setEditorData: Coloca o dado do modelo interno no espaço para edição.
+    """
     def paint(self, painter, option, index):
         option.displayAlignment = QtCore.Qt.AlignCenter
         QItemDelegate.paint(self, painter, option, index)
-
+    def setEditorData(self, editor, index):
+        text = index.data(PySide2.QtCore.Qt.EditRole) or index.data(PySide2.QtCore.Qt.DisplayRole)
+        editor.setText(text)    
 class MyTableModel(QtCore.QAbstractTableModel):
     def __init__(self, parent, mylist, header, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         self.mylist = mylist
         self.header = header
+
+    def flags(self, index):
+        """
+        Define as flags Qt para cada item.
+        """
+        return PySide2.QtCore.Qt.ItemIsEditable | PySide2.QtCore.Qt.ItemIsEnabled | PySide2.QtCore.Qt.ItemIsSelectable | PySide2.QtCore.Qt.ItemIsUserCheckable
+
+    def setData(self, index, value, role=PySide2.QtCore.Qt.EditRole):
+        """
+        Atualiza valores do modelo em indices sendo editados.
+        """
+        if role == QtCore.Qt.EditRole:
+            x = index.row()
+            y = index.column()
+            self.mylist[x][y] = value
+            self.dataChanged.emit(len(self.mylist[0]),len(self.mylist))
+            return True
+        return False
 
     def rowCount(self, parent):
         return len(self.mylist)
@@ -41,6 +65,11 @@ class MyTableModel(QtCore.QAbstractTableModel):
         elif role != QtCore.Qt.DisplayRole:
             return None
         return self.mylist[index.row()][index.column()]
+
+    def get_data(self):
+        return self.mylist
+    def get_header(self):
+        return self.header
 
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
@@ -77,6 +106,8 @@ class janela(QMainWindow):
 
 class Gerente:
     def __init__(self,app,janela):
+        DEFAULT_X = 13
+        DEFAULT_Y = 13
         self.app = app
         self.runners = []
         self.semaphores = []
@@ -92,8 +123,8 @@ class Gerente:
         self.janela = janela 
         self.janela.interface.show()
         self.janela.interface.botao_parar.setEnabled(False)
-        header = [chr(x+65) for x in range(0,14)]
-        data_list = [['?'] * 13 for x in range(0,13) ]
+        header = [chr(x+65) for x in range(0,DEFAULT_X+1)]
+        data_list = [['?'] * DEFAULT_X for Y in range(0,DEFAULT_Y) ]
         self.table_model = MyTableModel(janela.interface, data_list, header)
         
         detectorThread = Thread(name='detect',target=detect,args=(window.interface,semafaro_detector,running_detector))
@@ -103,6 +134,7 @@ class Gerente:
         janela.interface.box_nome.setText("arquivo_" + datetime.now().strftime("%d-%m-%Y %H-%M-%S"))
         janela.interface.tableView.setModel(self.table_model)
         janela.interface.tableView.setItemDelegate(AlignDelegate())
+        janela.interface.tableView.setShowGrid(True)
         @Slot()
         def go():
             interrupt_scanner.clear()
