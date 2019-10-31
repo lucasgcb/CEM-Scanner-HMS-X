@@ -16,6 +16,20 @@ from demo import scan
 from detector import detect
 from analisador import scan
 from datetime import datetime
+from interfacehandlers import get_filename, interface_error_msg, interface_update_filename
+
+
+def model_to_csv(model,fname):
+    import csv  
+    with open('{}.csv'.format(fname), 'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerow(model.get_header())
+        data = model.get_data()
+        for row in data:
+            rows = []
+            for val in row:
+                rows.append(val)
+            spamwriter.writerow(row)
 
 class AlignDelegate(QItemDelegate):
     """
@@ -123,8 +137,8 @@ class Gerente:
         self.janela = janela 
         self.janela.interface.show()
         self.janela.interface.botao_parar.setEnabled(False)
-        header = [chr(x+65) for x in range(0,DEFAULT_X+1)]
-        data_list = [['?'] * DEFAULT_X for Y in range(0,DEFAULT_Y) ]
+        header = [chr(x+65) for x in range(0,DEFAULT_X)]
+        data_list = [['?'] * DEFAULT_X for Y in range(0,DEFAULT_Y-1) ]
         self.table_model = MyTableModel(janela.interface, data_list, header)
         
         detectorThread = Thread(name='detect',target=detect,args=(window.interface,semafaro_detector,running_detector))
@@ -135,13 +149,16 @@ class Gerente:
         janela.interface.tableView.setModel(self.table_model)
         janela.interface.tableView.setItemDelegate(AlignDelegate())
         janela.interface.tableView.setShowGrid(True)
+
         @Slot()
         def go():
+            interface_update_filename(self.janela.interface)
             interrupt_scanner.clear()
             semafaro_scanner.release()
         @Slot()
         def stop():
-            self.janela.interface.label_status.setText("Interrompendo...")
+            interface_error_msg(self.janela.interface,"Interrompendo...")
+            
             interrupt_scanner.set()
         
         @Slot()
@@ -149,10 +166,16 @@ class Gerente:
             pass
             semafaro_detector.release()
 
-        
+        @Slot()
+        def salvar_manual():
+            fname = get_filename(self.janela.interface)
+            model_to_csv(self.table_model,fname)
+            interface_error_msg(self.janela.interface,"Salvo: " + fname + ".csv")
+
         self.janela.interface.botao_vai.clicked.connect(go)
         self.janela.interface.botao_parar.clicked.connect(stop)
         self.janela.interface.botao_instrumento.clicked.connect(detecting)
+        self.janela.interface.botao_salvar.clicked.connect(salvar_manual)
         
 
     def exec(self):

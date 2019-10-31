@@ -5,16 +5,13 @@ Created on Tue Aug 27 15:18:45 2019
 @author: Dave
 """
 import time
-import datetime
+from interfacehandlers import (interface_status_msg, interface_error_msg, 
+                               interface_scan_finished, get_frequency, 
+                               get_filename, get_unit, get_X, get_Y, 
+                               interface_scan_start, interface_update_filename)
 
 class Interrupt_Error(Exception):
         pass
-
-def interface_error_msg(interface, error_msg="Erro: Desconhecido"):
-    interface.label_erro.setText(error_msg)
-
-def interface_status_msg(interface, status_msg="Desconhecido"):
-    interface.label_status.setText(status_msg)
 
 def instrument_clean_up(instrument,interface,detector,error_msg=" ",):
     instrument.close()
@@ -29,14 +26,6 @@ def interrupt_instrument(instrument,interface):
     instrument.close()
     raise Interrupt_Error
 
-def interface_scan_start(interface):
-    interface.botao_vai.setEnabled(False)
-    interface.botao_parar.setEnabled(True)
-    interface.botao_instrumento.setEnabled(False)
-    interface.box_nome.setEnabled(False)
-    ###
-    interface_error_msg(interface," ")
-    interface_status_msg(interface,"Iniciando...")
 
 def instrument_setup(Instrument,freq,interface):
     instrument = Instrument(interface.box_instrumento.currentText())
@@ -47,39 +36,12 @@ def instrument_setup(Instrument,freq,interface):
     interface_status_msg(interface,"Escaneando...")
     return instrument
 
-def interface_scan_finished(interface):
-    interface_update_filename(interface)
-    interface.botao_vai.setEnabled(True)
-    interface.botao_parar.setEnabled(False)
-    interface.botao_instrumento.setEnabled(True)
-    interface.box_nome.setEnabled(True)
-
-def get_unit(interface):
-    unidades = {"kHz": 1000,
-                "MHz": 1000000,
-                "GHz": 1000000000}
-    return unidades[str(interface.box_frequencia_unidade.currentText())]
-
-def get_frequency(interface):
-    freq = interface.box_frequencia.value()
-    return freq * get_unit(interface)
-
-def interface_update_filename(interface):
-    interface.box_nome.setText("arquivo_" + datetime.datetime.now().strftime("%d-%m-%Y %H-%M-%S"))
-
-def get_X(interface):
-    return interface.box_dimensao_X.value()
-
-def get_Y(interface):
-    return interface.box_dimensao_Y.value()
 
 def dim_gen(indiceX,char):
     return [char for y in range(0,indiceX)]
 
-def get_filename(interface):
-    return interface.box_nome.text()
 
-def model_to_csv(model,fname,interface):
+def model_to_csv(model,fname):
     import csv  
     with open('{}.csv'.format(fname), 'w', newline='') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
@@ -90,7 +52,6 @@ def model_to_csv(model,fname,interface):
             for val in row:
                 rows.append(val)
             spamwriter.writerow(row)
-    interface_update_filename(interface)
 
 def scan(interface,running,interrupt,semafaro,detector,model):
     from scpiinterface import Instrument
@@ -128,7 +89,8 @@ def scan(interface,running,interrupt,semafaro,detector,model):
                         interrupt_instrument(instrument,interface)  
             print(instrument.hello)
             instrument_clean_up(instrument,interface,detector)
-            model_to_csv(model,fname,interface)
+            model_to_csv(model,fname)
+            interface_error_msg(interface,"Salvo: " + fname + ".csv")
     
         except (KeyboardInterrupt, Interrupt_Error) as e:
             print("Something went wrong: " + str(e))
