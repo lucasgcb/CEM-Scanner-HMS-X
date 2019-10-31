@@ -5,6 +5,7 @@ Created on Tue Aug 27 15:18:45 2019
 @author: Dave
 """
 import time
+from utility import model_to_csv
 from interfacehandlers import (interface_status_msg, interface_error_msg, 
                                interface_scan_finished, get_frequency, 
                                get_filename, get_unit, get_X, get_Y, 
@@ -40,18 +41,6 @@ def instrument_setup(Instrument,freq,interface):
 def dim_gen(indiceX,char):
     return [char for y in range(0,indiceX)]
 
-
-def model_to_csv(model,fname):
-    import csv  
-    with open('{}.csv'.format(fname), 'w', newline='') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow(model.get_header())
-        data = model.get_data()
-        for row in data:
-            rows = []
-            for val in row:
-                rows.append(val)
-            spamwriter.writerow(row)
 
 def scan(interface,running,interrupt,semafaro,detector,model):
     from scpiinterface import Instrument
