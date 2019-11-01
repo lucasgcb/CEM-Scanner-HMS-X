@@ -14,6 +14,28 @@ def interface_scan_start(interface):
     interface_error_msg(interface," ")
     interface_status_msg(interface,"Iniciando...")
 
+def interface_matrix_start(interface):
+    interface.botao_vai.setEnabled(False)
+    interface.botao_parar.setEnabled(False)
+    interface.botao_instrumento.setEnabled(False)
+    interface.box_nome.setEnabled(False)
+    interface.botao_salvar.setEnabled(False)
+    interface.box_config.setEnabled(False)
+    ###
+    interface_error_msg(interface," ")
+    interface_status_msg(interface,"Programando...")
+
+def interface_matrix_end(interface):
+    interface.botao_vai.setEnabled(True)
+    interface.botao_parar.setEnabled(False)
+    interface.botao_instrumento.setEnabled(True)
+    interface.box_nome.setEnabled(True)
+    interface.botao_salvar.setEnabled(True)
+    interface.box_config.setEnabled(True)
+    ###
+    interface_error_msg(interface," ")
+    interface_status_msg(interface,"Esperando")
+
 def interface_scan_finished(interface):
     interface_update_filename(interface)
     interface.botao_vai.setEnabled(True)

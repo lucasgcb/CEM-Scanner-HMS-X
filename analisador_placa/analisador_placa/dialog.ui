@@ -13,414 +13,349 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QSpinBox" name="box_dimensao_X">
-   <property name="geometry">
-    <rect>
-     <x>290</x>
-     <y>380</y>
-     <width>42</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="minimum">
-    <number>2</number>
-   </property>
-   <property name="maximum">
-    <number>999</number>
-   </property>
-   <property name="value">
-    <number>13</number>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="box_dimensao_Y">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>380</y>
-     <width>42</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="minimum">
-    <number>2</number>
-   </property>
-   <property name="maximum">
-    <number>999</number>
-   </property>
-   <property name="value">
-    <number>13</number>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="box_frequencia">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>420</y>
-     <width>71</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="minimum">
-    <number>100</number>
-   </property>
-   <property name="maximum">
-    <number>1000</number>
-   </property>
-   <property name="singleStep">
-    <number>100</number>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="box_frequencia_unidade">
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>420</y>
-     <width>51</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <item>
-    <property name="text">
-     <string>kHz</string>
-    </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="6" column="4" rowspan="2">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>Status:</string>
+     </property>
+    </widget>
    </item>
-   <item>
-    <property name="text">
-     <string>MHz</string>
-    </property>
+   <item row="7" column="9" colspan="2">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>unidade</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </item>
-   <item>
-    <property name="text">
-     <string>GHz</string>
-    </property>
+   <item row="4" column="7" colspan="4">
+    <widget class="QLabel" name="label_3">
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>Configuração de Modo</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </item>
-  </widget>
-  <widget class="QLineEdit" name="box_nome">
-   <property name="geometry">
-    <rect>
-     <x>480</x>
-     <y>420</y>
-     <width>161</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>arquivo</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="box_config">
-   <property name="geometry">
-    <rect>
-     <x>484</x>
-     <y>380</y>
-     <width>101</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <item>
-    <property name="text">
-     <string>Manual</string>
-    </property>
+   <item row="9" column="8" rowspan="2">
+    <widget class="QSpinBox" name="box_dimensao_X">
+     <property name="minimum">
+      <number>2</number>
+     </property>
+     <property name="maximum">
+      <number>999</number>
+     </property>
+     <property name="value">
+      <number>13</number>
+     </property>
+    </widget>
    </item>
-   <item>
-    <property name="text">
-     <string>Automático</string>
-    </property>
+   <item row="4" column="1">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Nome Arquivo</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </item>
-  </widget>
-  <widget class="QSpinBox" name="box_config_tempo">
-   <property name="geometry">
-    <rect>
-     <x>594</x>
-     <y>380</y>
-     <width>42</width>
-     <height>22</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="botao_vai">
-   <property name="geometry">
-    <rect>
-     <x>320</x>
-     <y>480</y>
-     <width>80</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Limpa a tela e inicia um novo scan.&lt;/p&gt;&lt;p&gt;Salva automáticamente e atualiza nome do arquivo.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="text">
-    <string>Novo Scan</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="botao_parar">
-   <property name="geometry">
-    <rect>
-     <x>420</x>
-     <y>480</y>
-     <width>80</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Parar</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>360</y>
-     <width>131</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Dimensões</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>400</y>
-     <width>131</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="layoutDirection">
-    <enum>Qt::LeftToRight</enum>
-   </property>
-   <property name="text">
-    <string>Frequência</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>490</x>
-     <y>360</y>
-     <width>151</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="layoutDirection">
-    <enum>Qt::LeftToRight</enum>
-   </property>
-   <property name="text">
-    <string>Configuração de Modo</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>650</x>
-     <y>380</y>
-     <width>41</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>s</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_5">
-   <property name="geometry">
-    <rect>
-     <x>480</x>
-     <y>400</y>
-     <width>151</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Nome Arquivo</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_6">
-   <property name="geometry">
-    <rect>
-     <x>650</x>
-     <y>420</y>
-     <width>21</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>.csv</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_7">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>450</y>
-     <width>61</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Status:</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_status">
-   <property name="geometry">
-    <rect>
-     <x>406</x>
-     <y>450</y>
-     <width>131</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Aguardando...</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_9">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>380</y>
-     <width>16</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>X</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_10">
-   <property name="geometry">
-    <rect>
-     <x>340</x>
-     <y>380</y>
-     <width>16</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Y</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_erro">
-   <property name="geometry">
-    <rect>
-     <x>320</x>
-     <y>500</y>
-     <width>281</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="box_instrumento">
-   <property name="geometry">
-    <rect>
-     <x>358</x>
-     <y>20</y>
-     <width>191</width>
-     <height>22</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_8">
-   <property name="geometry">
-    <rect>
-     <x>278</x>
-     <y>20</y>
-     <width>71</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Instrumento:</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="botao_instrumento">
-   <property name="geometry">
-    <rect>
-     <x>564</x>
-     <y>20</y>
-     <width>80</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>ATUALIZAR</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_instrumento">
-   <property name="geometry">
-    <rect>
-     <x>650</x>
-     <y>20</y>
-     <width>71</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QTableView" name="tableView">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>60</y>
-     <width>821</width>
-     <height>281</height>
-    </rect>
-   </property>
-   <attribute name="horizontalHeaderDefaultSectionSize">
-    <number>60</number>
-   </attribute>
-  </widget>
-  <widget class="QPushButton" name="botao_salvar">
-   <property name="geometry">
-    <rect>
-     <x>520</x>
-     <y>480</y>
-     <width>80</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Salvar Manual</string>
-   </property>
-  </widget>
+   <item row="1" column="4" colspan="3">
+    <widget class="QComboBox" name="box_instrumento"/>
+   </item>
+   <item row="6" column="5" rowspan="2" colspan="2">
+    <widget class="QLabel" name="label_status">
+     <property name="text">
+      <string>Aguardando...</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="7">
+    <widget class="QLabel" name="label_14">
+     <property name="text">
+      <string>X</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="10">
+    <widget class="QLabel" name="label_real_y">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="4" rowspan="2">
+    <widget class="QPushButton" name="botao_vai">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Limpa a tela e inicia um novo scan.&lt;/p&gt;&lt;p&gt;Salva automáticamente e atualiza nome do arquivo.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Novo Scan</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="3">
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>Controlador:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="8" colspan="3">
+    <widget class="QComboBox" name="box_config">
+     <item>
+      <property name="text">
+       <string>Manual</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Automático</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="8" column="6" rowspan="2">
+    <widget class="QPushButton" name="botao_parar">
+     <property name="text">
+      <string>Parar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="10" colspan="2">
+    <widget class="QLabel" name="label_instrumento">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="12">
+    <widget class="QTableView" name="tableView">
+     <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>60</number>
+     </attribute>
+    </widget>
+   </item>
+   <item row="2" column="5" colspan="2">
+    <widget class="QPushButton" name="botao_instrumento">
+     <property name="text">
+      <string>ATUALIZAR</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="4" colspan="2">
+    <widget class="QSpinBox" name="box_frequencia">
+     <property name="minimum">
+      <number>100</number>
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+     <property name="singleStep">
+      <number>100</number>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="3">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>.csv</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="4" colspan="3">
+    <widget class="QComboBox" name="box_controlador"/>
+   </item>
+   <item row="2" column="7" colspan="3">
+    <widget class="QLabel" name="label_instrumento_2">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="7" colspan="3">
+    <widget class="QPushButton" name="botao_controlar">
+     <property name="text">
+      <string>PAREAR</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="8">
+    <widget class="QLabel" name="label_real_x">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="7" colspan="4">
+    <widget class="QLabel" name="label_12">
+     <property name="text">
+      <string>Dimensões Reais</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="6">
+    <widget class="QComboBox" name="box_frequencia_unidade">
+     <item>
+      <property name="text">
+       <string>kHz</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>MHz</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>GHz</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="9" column="7" rowspan="2">
+    <widget class="QLabel" name="label_9">
+     <property name="text">
+      <string>X</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="9">
+    <widget class="QLabel" name="label_15">
+     <property name="text">
+      <string>Y</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="4" colspan="3">
+    <widget class="QLabel" name="label_2">
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>Frequência</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="7" colspan="4">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Dimensões Dados</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="3">
+    <widget class="QLabel" name="label_11">
+     <property name="text">
+      <string>Instrumento:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="3">
+    <widget class="QLineEdit" name="box_nome">
+     <property name="text">
+      <string>arquivo</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QPushButton" name="botao_salvar">
+     <property name="text">
+      <string>Salvar Agora</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="10" rowspan="2">
+    <widget class="QSpinBox" name="box_dimensao_Y">
+     <property name="minimum">
+      <number>2</number>
+     </property>
+     <property name="maximum">
+      <number>999</number>
+     </property>
+     <property name="value">
+      <number>13</number>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="4" colspan="3">
+    <widget class="QLabel" name="label_erro">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="8" rowspan="2">
+    <widget class="QSpinBox" name="box_config_tempo">
+     <property name="minimum">
+      <number>1</number>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="9" rowspan="2">
+    <widget class="QLabel" name="label_10">
+     <property name="text">
+      <string>Y</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="11" rowspan="9">
+    <widget class="QPushButton" name="botao_matriz">
+     <property name="minimumSize">
+      <size>
+       <width>80</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Programar</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

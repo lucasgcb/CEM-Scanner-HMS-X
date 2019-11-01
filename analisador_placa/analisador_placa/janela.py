@@ -16,7 +16,7 @@ from demo import scan
 from detector import detect
 from analisador import scan
 from datetime import datetime
-from interfacehandlers import get_filename, interface_error_msg, interface_update_filename
+from interfacehandlers import get_filename, interface_error_msg, interface_update_filename,interface_matrix_end, interface_matrix_start
 from utility import model_to_csv
 
 class AlignDelegate(QItemDelegate):
@@ -105,6 +105,21 @@ class janela(QMainWindow):
         ui_file.open(QFile.ReadOnly)
         self.interface = loader.load(ui_file)
         ui_file.close()
+        super(janela, self).__init__()
+
+    def newwindow(self):
+        interface_matrix_start(self.interface)
+        self.wid = PySide2.QtWidgets.QWidget()
+        self.wid.resize(250, 150)
+        self.wid.setWindowTitle('NewWindow')
+        self.wid.show()
+        self.wid.installEventFilter(self)
+    
+    def eventFilter(self, obj, event):
+        if obj is self.wid and event.type() == QtCore.QEvent.Close:
+            interface_matrix_end(self.interface)
+            return True
+        return super(janela, self).eventFilter(obj, event)
 
 class Gerente:
     def __init__(self,app,janela):
@@ -129,8 +144,8 @@ class Gerente:
         data_list = [['?'] * DEFAULT_X for Y in range(0,DEFAULT_Y-1) ]
         self.table_model = MyTableModel(janela.interface, data_list, header)
         
-        detectorThread = Thread(name='detect',target=detect,args=(window.interface,semafaro_detector,running_detector))
-        scannerThread = Thread(name='scan',target=scan,args=(window.interface,running_detector,interrupt_scanner,semafaro_scanner,semafaro_detector,self.table_model))
+        detectorThread = Thread(name='detect',target=detect,args=(janela.interface,semafaro_detector,running_detector))
+        scannerThread = Thread(name='scan',target=scan,args=(janela.interface,running_detector,interrupt_scanner,semafaro_scanner,semafaro_detector,self.table_model))
         detectorThread.start()
         scannerThread.start()
         janela.interface.box_nome.setText("arquivo_" + datetime.now().strftime("%d-%m-%Y %H-%M-%S"))
@@ -160,8 +175,13 @@ class Gerente:
             model_to_csv(self.table_model,fname)
             interface_error_msg(self.janela.interface,"Salvo: " + fname + ".csv")
 
+        @Slot()
+        def conf_matriz():
+            self.janela.newwindow()
+
         self.janela.interface.botao_vai.clicked.connect(go)
         self.janela.interface.botao_parar.clicked.connect(stop)
+        self.janela.interface.botao_matriz.clicked.connect(conf_matriz)
         self.janela.interface.botao_instrumento.clicked.connect(detecting)
         self.janela.interface.botao_salvar.clicked.connect(salvar_manual)
         
@@ -169,6 +189,7 @@ class Gerente:
     def exec(self):
         self.app.exec_()
         self.clean_up()
+        
     def clean_up(self):
         print("CLEAN EXIT")
         for runner in self.runners:

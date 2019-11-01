@@ -89,6 +89,7 @@ def scan(interface,running,interrupt,semafaro,detector,model):
                 instrument_clean_up(instrument,interface,detector, "Erro: Interrompido.")
             except Exception:
                 interface_error_msg(interface, "Erro: Cheque Conexão.")
+                interface_status_msg(interface, "Esperando...")
                 if running.is_set() is False:
                             return
         
@@ -100,6 +101,7 @@ def scan(interface,running,interrupt,semafaro,detector,model):
                 instrument_clean_up(instrument,interface,detector, "Erro: Desconhecido. Cheque conexão.")
             except Exception:
                 interface_error_msg(interface,"Erro: Cheque Conexão.")
+                interface_status_msg(interface, "Esperando...")
                 if running.is_set() is False:
                             return
         interface_scan_finished(interface)
