@@ -1,0 +1,13 @@
+main.c:190:6:Sm_MOVING	0	static
+main.c:195:6:Sm_PAUSED	0	static
+main.c:380:6:ouvirTask	8	static
+main.c:112:6:Sm_DISCONNECTED	88	static
+main.c:148:6:Sm_STANDBY	96	static
+main.c:370:6:maquina	8	static
+main.c:394:6:StartDefaultTask	8	static
+main.c:200:6:Sm_ERR	0	static
+main.c:205:6:Rodar_Maquina	0	static
+main.c:310:6:SystemClock_Config	96	static
+main.c:229:5:main	80	static
+main.c:419:6:HAL_TIM_PeriodElapsedCallback	0	static
+main.c:436:6:Error_Handler	0	static
