@@ -27,7 +27,13 @@
 #define CMD_DC 0
 #define CMD_ID 2
 #define CMD_STAT 3
-#define CMD_MOV 4
+#define CMD_MOVX 4
+#define CMD_MOVY 5
+#define CMD_SSTEP 6
+#define CMD_STEPQ 7
+/// TODOZAO
+/// SEPARAR ESTADOS INTERFACE E ESTADOS ACAO
+/// EH ISSO AI MSM
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -63,6 +69,86 @@ void StartDefaultTask(void const * argument);
 void ouvirTask(void const * argument);
 void maquina(void const * argument);
 void Rodar_Maquina(void);
+void interfaceDuranteMovimento();
+void enviarPassos(void);
+uint8_t interpretarSerial(uint8_t  *);
+uint8_t movimentos_em_x = 0;
+uint8_t movimentos_em_y = 0;
+uint32_t step_atual = 6969;
+typedef struct Comandos
+{
+	uint8_t conectar[8];
+	uint8_t desconectar[8];
+	uint8_t moverX[6];
+	uint8_t moverY[6];
+	uint8_t status[8];
+	uint8_t set_step[8];
+	uint8_t step[8];
+	uint8_t identificar[8];
+} Comandos;
+typedef struct Respostas
+{
+	uint8_t conectar[8];
+	uint8_t desconectar[8];
+	uint8_t moverX[6];
+	uint8_t moverY[6];
+	uint8_t status[8];
+	uint8_t identificar[8];
+	uint8_t set_step[8];
+	uint8_t step[8];
+	uint8_t wtf[8];
+} Respostas;
+
+Respostas respostas_disconnected = {"YES_CON",
+																  "DISC",
+																  "DISC",
+																  "DISC",
+																  "DISC",
+																  "CMDR!",
+																  "NCONN",
+																  "DISC",
+																  "wtf!"};
+
+Respostas respostas_standby = {"ALR_CON",
+														 "YES_DIS",
+														  "MOVX",
+														  "MOVY",
+														  "STBY",
+														  "CMDR!",
+														  "STEP:",
+														  "STEP:",
+														  "wtf!"};
+
+Respostas respostas_moveX = {"ALR_CON",
+														 "YES_DIS",
+														  "BUSY",
+														  "BUSY",
+														  "MOVX",
+														  "CMDR!",
+														  "BUSY!",
+														  "BUSY!",
+														  "wtf!"};
+
+Respostas respostas_moveY = {"ALR_CON",
+														 "YES_DIS",
+														  "BUSY",
+														  "BUSY",
+														  "MOVY",
+														  "CMDR!",
+														  "BUSY!",
+														  "BUSY!",
+														  "wtf!"};
+
+
+Comandos comandos = {"*CONN?",
+											  "*DISC",
+											  "*MOVX",
+											  "*MOVY",
+											  "*STAT?",
+											  "*SSTEP",
+											  "*STEP?",
+											  "*IDN?"};
+
 
  static void MX_GPIO_Init(void)
 {
@@ -78,8 +164,8 @@ typedef enum
 {
 	STATE_DISCONNECTED,
 	STATE_STANDBY,
-	STATE_MOVING,
-	STATE_PAUSED,
+	STATE_MOVINGX,
+	STATE_MOVINGY,
 	STATE_ERR,
 	NUM_STATES
 }StateType;
@@ -94,111 +180,237 @@ typedef struct
 // Machine State Prototypes
 void Sm_DISCONNECTED(void);
 void Sm_STANDBY(void);
-void Sm_MOVING(void);
-void Sm_PAUSED(void);
+void Sm_MOVINGX(void);
+void Sm_MOVINGY(void);
 void Sm_ERR(void);
 
 StateMachineType StateMachine[] =
 {
 		{ STATE_DISCONNECTED, Sm_DISCONNECTED },
 		{ STATE_STANDBY, Sm_STANDBY },
-		{ STATE_PAUSED, Sm_PAUSED},
-		{ STATE_MOVING, Sm_MOVING },
+		{ STATE_MOVINGX, Sm_MOVINGX },
+		{ STATE_MOVINGY, Sm_MOVINGY },
 		{ STATE_ERR, Sm_ERR },
 };
 
 StateType SmState = STATE_DISCONNECTED;
+void enviarPassos()
+{
+	char temp[33];
+	uint8_t temp2[33];
+	uint8_t buff_size = 0;
+	for (int i=0; i<33; i++)
+	{
+			temp2[i]=0;
+			temp[i]=0;
+	}
+	itoa(step_atual,temp,10);
+	for (int i=0; i<33; i++)
+	{
+		    if(temp[i]!=0)
+		    {
+		    	buff_size++;
+		    }
+			temp2[i]=temp[i];
+	}
+	CDC_Transmit_FS(temp2,buff_size);
+}
+
+void setPassos(uint8_t* comandoCompleto)
+{
+	char temp[33];
+	uint8_t errstep[9] = {"ERRSTEP",};
+	osDelay(1);
+	for (int i=0; i<8; i++)
+	{
+			temp[i]=0;
+	}
+	for (int i=7; i<16; i++)
+	{
+			if(comandoCompleto[i]==')')
+			{
+				temp[i-7] = '\0';
+				break;
+			}
+			if(48 > comandoCompleto[i] || 57< comandoCompleto[i])
+			{
+				CDC_Transmit_FS(errstep, 8);
+				return;
+			}
+
+			temp[i-7]=comandoCompleto[i];
+	}
+	step_atual = atoi(temp);
+	enviarPassos();
+
+}
+uint8_t interpretarSerial(uint8_t  *entrada)
+{
+	 if(memcmp(entrada,comandos.identificar,5)==0 )
+		 return CMD_ID;
+	  if(memcmp(entrada,comandos.conectar,5)==0 )
+		 return CMD_CO;
+	  if(memcmp(entrada,comandos.desconectar,5)==0 )
+		 return CMD_DC;
+	  if(memcmp(entrada,comandos.moverX,5)==0 )
+		 return CMD_MOVX;
+	  if(memcmp(entrada,comandos.moverY,5)==0 )
+		 return CMD_MOVY;
+	  if(memcmp(entrada,comandos.status,5)==0 )
+		 return CMD_STAT;
+	  if(memcmp(entrada,comandos.step,5)==0 )
+	  	return CMD_STEPQ;
+	  if(memcmp(entrada,comandos.set_step,5)==0 )
+	  	 return CMD_SSTEP;
+	  return -1;
+}
 
 void Sm_DISCONNECTED(void)
 {
 
-	 uint8_t temp[10]="ue";
-	 uint8_t resposta = 0;
-	 uint8_t pergunta_identificador[6] = {"*IDN?"};
-	 uint8_t pergunta_conectar[6] = {"*CONN?"};
-	 uint8_t resposta_identificador[12] = {"CMDR!"};
-	 uint8_t resposta_wtf[12] = {"WTF!!"};
-	 uint8_t resposta_conectar[12] = {"OK_CON!"};
+	 uint8_t temp[16]="ue";
+	 uint8_t resposta = -1;
 	 if( xSemaphoreTake( semafaroUsb ,10000) == pdTRUE )
 	 {
-	 		  resposta=0;
-			  memcpy(temp,buffer_usb,9);
+		 	 movimentos_em_x = 0;
+		 	 movimentos_em_y = 0;
+	 		  resposta=-1;
+			  memcpy(temp,buffer_usb,16);
 			  osDelay(2);
-			  if(memcmp(temp,pergunta_identificador,5)==0 )
-				 resposta = CMD_ID;
-			  if(memcmp(temp,pergunta_conectar,5)==0 )
-				  resposta = CMD_CO;
-			  resposta_wtf[4] = memcmp(temp,pergunta_identificador,6) + 48;
-			  resposta_wtf[6] = resposta;
+			  resposta = interpretarSerial(temp);
+
 			  switch(resposta)
 			  {
 			  		case CMD_ID:
-			  					CDC_Transmit_FS(resposta_identificador,5);
+			  					CDC_Transmit_FS(respostas_disconnected.identificar ,4);
 			  					SmState = STATE_DISCONNECTED;
 			  					break;
 			  		case CMD_CO:
-			  					CDC_Transmit_FS(resposta_conectar,5);
+			  					CDC_Transmit_FS(respostas_disconnected.conectar ,5);
 			  					SmState = STATE_STANDBY;
 			  					break;
+			  		case CMD_DC:
+			  					CDC_Transmit_FS(respostas_disconnected.desconectar ,5);
+								SmState = STATE_DISCONNECTED;
+								break;
+			 		case CMD_MOVX:
+								CDC_Transmit_FS(respostas_disconnected.moverX ,4);
+								SmState = STATE_DISCONNECTED;
+								break;
+			 		case CMD_MOVY:
+								CDC_Transmit_FS(respostas_disconnected.moverY ,4);
+								SmState = STATE_DISCONNECTED;
+								break;
+			 		case CMD_STAT:
+								CDC_Transmit_FS(respostas_disconnected.status ,4);
+								SmState = STATE_DISCONNECTED;
+								break;
+			 		case CMD_STEPQ:
+								CDC_Transmit_FS(respostas_disconnected.step ,5);
+								osDelay(2);
+								SmState = STATE_DISCONNECTED;
+								break;
+			 		case CMD_SSTEP:
+								CDC_Transmit_FS(respostas_disconnected.set_step ,5);
+								osDelay(2);
+								SmState = STATE_DISCONNECTED;
+								break;
 			  		default:
-			  					CDC_Transmit_FS(resposta_wtf,6);
+			  					CDC_Transmit_FS(respostas_disconnected.wtf,4);
 			  					SmState = STATE_DISCONNECTED;
 			}
 	}
 }
 void Sm_STANDBY(void)
 {
-	 uint8_t temp[10]="ue";
-	 uint8_t resposta = 0;
-	 uint8_t pergunta_desconectar[6] = {"*DISC"};
-	 uint8_t resposta_desconectar[6] = {":( DC"};
-	 uint8_t pergunta_status[6] = {"*STAT"};
-	 uint8_t resposta_status[6] = {"STBY"};
-	 uint8_t pergunta_move[6] = {"*MOVE"};
-	 uint8_t resposta_move[6] = {"NO"};
-	 uint8_t resposta_wtf[12] = {"WTF!"};
+	 uint8_t temp[16]="ue";
+	 uint8_t resposta = -1;
 	 if( xSemaphoreTake( semafaroUsb ,10000) == pdTRUE )
 	 {
+		      movimentos_em_x = 0;
+		 	  movimentos_em_y = 0;
 	 		  resposta=-1;
-			  memcpy(temp,buffer_usb,9);
+			  memcpy(temp,buffer_usb,15);
+
 			  osDelay(2);
-			  if(memcmp(temp,pergunta_status,5)==0 )
-				 resposta = CMD_STAT;
-			  if(memcmp(temp,pergunta_desconectar,5)==0 )
-				  resposta = CMD_DC;
-		     if(memcmp(temp,pergunta_move,5)==0 )
-				  resposta = CMD_MOV;
+			  resposta = interpretarSerial(temp);
 
-
-			  switch(resposta)
-			  {
-			  		case CMD_DC:
-			  					CDC_Transmit_FS(resposta_desconectar,5);
-			  					SmState = STATE_DISCONNECTED;
-			  					break;
-			  		case CMD_STAT:
-			  					CDC_Transmit_FS(resposta_status,5);
-			  					SmState = STATE_STANDBY;
-			  					break;
-			  		case CMD_MOV:
-			  					CDC_Transmit_FS(resposta_move,5);
-			  					SmState = STATE_STANDBY;
-			  					break;
-			  		default:
-			  					CDC_Transmit_FS(resposta_wtf,5);
-			  					SmState = STATE_STANDBY;
-			}
+		     switch(resposta)
+		   			  {
+		   			  		case CMD_ID:
+		   			  					CDC_Transmit_FS(respostas_standby.identificar ,5);
+		   			  					SmState = STATE_STANDBY;
+		   			  					break;
+		   			  		case CMD_CO:
+		   			  					CDC_Transmit_FS(respostas_standby.conectar ,5);
+		   			  					SmState = STATE_STANDBY;
+		   			  					break;
+		   			  		case CMD_DC:
+		   			  					CDC_Transmit_FS(respostas_standby.desconectar ,5);
+		   								SmState = STATE_DISCONNECTED;
+		   								break;
+		   			 		case CMD_MOVX:
+		   								CDC_Transmit_FS(respostas_standby.moverX ,4);
+										movimentos_em_x = 1 * step_atual;
+		   								SmState = STATE_MOVINGX;
+		   								break;
+		   			 		case CMD_MOVY:
+		   								CDC_Transmit_FS(respostas_standby.moverY ,4);
+		   								movimentos_em_y = 1 * step_atual;
+		   								SmState = STATE_MOVINGY;
+		   								break;
+		   			 		case CMD_STAT:
+		   								CDC_Transmit_FS(respostas_standby.status ,4);
+		   								SmState = STATE_STANDBY;
+		   								break;
+					 		case CMD_STEPQ:
+										CDC_Transmit_FS(respostas_standby.step ,5);
+										osDelay(2);
+										enviarPassos();
+										SmState = STATE_STANDBY;
+										break;
+					 		case CMD_SSTEP:
+										CDC_Transmit_FS(respostas_standby.set_step ,5);
+										osDelay(2);
+										setPassos(temp);
+										SmState = STATE_STANDBY;
+										break;
+		   			  		default:
+		   			  					CDC_Transmit_FS(respostas_standby.wtf,4);
+		   			  					SmState = STATE_STANDBY;
+		   			}
 	}
 }
-void Sm_MOVING(void)
+void Sm_MOVINGX(void)
 {
+	uint8_t fim[6] = "MVXOK";
+	while(movimentos_em_x>0)
+	{
+		movimentos_em_x--;
+		if (SmState != STATE_MOVINGX)
+			return;
+		//logica de fazer o bagulho
+		osDelay(1);
+	}
+	CDC_Transmit_FS(fim,5);
 	SmState = STATE_STANDBY;
 }
 
-void Sm_PAUSED(void)
+void Sm_MOVINGY(void)
 {
-	SmState = STATE_MOVING;
+	uint8_t fim[6] = "MVYOK";
+	while(movimentos_em_y>0)
+	{
+		movimentos_em_y--;
+		if (SmState != STATE_MOVINGY)
+			return;
+		//logica de fazer o bagulho
+		osDelay(1);
+	}
+	CDC_Transmit_FS(fim,5);
+	SmState = STATE_STANDBY;
 }
+
 
 void Sm_ERR(void)
 {
@@ -380,14 +592,77 @@ void maquina(void const * argument)
 	}
 }
 
+
+void interfaceDuranteMovimento()
+{
+	uint8_t resposta = -1;
+	uint8_t temp[12];
+	if ((SmState == STATE_MOVINGX) || (SmState == STATE_MOVINGY))
+	{
+		 if( xSemaphoreTake( semafaroUsb ,10000) == pdTRUE )
+			 {
+			 	 	 if ((SmState != STATE_MOVINGX) && (SmState != STATE_MOVINGY))
+			 	 	 {
+			 	 		xSemaphoreGive( semafaroUsb);
+			 	 		return;
+			 	 	 }
+
+			 		  resposta=-1;
+					  memcpy(temp,buffer_usb,9);
+
+					  osDelay(2);
+					  resposta = interpretarSerial(temp);
+
+				     switch(resposta)
+				   			  {
+				   			  		case CMD_ID:
+				   			  					CDC_Transmit_FS(respostas_moveX.identificar ,5);
+				   			  					break;
+				   			  		case CMD_CO:
+				   			  					CDC_Transmit_FS(respostas_moveX.conectar ,5);
+				   			  					break;
+				   			  		case CMD_DC:
+				   			  					CDC_Transmit_FS(respostas_moveX.desconectar ,5);
+				   								SmState = STATE_DISCONNECTED;
+				   								break;
+				   			 		case CMD_MOVX:
+				   								CDC_Transmit_FS(respostas_moveX.moverX ,5);
+				   								break;
+				   			 		case CMD_MOVY:
+				   								CDC_Transmit_FS(respostas_moveX.moverY ,5);
+				   								break;
+				   			 		case CMD_STAT:
+		   			 							if (SmState ==  STATE_MOVINGY)
+		   			 							{
+		   			 								CDC_Transmit_FS(respostas_moveY.status ,5);
+		   			 							}
+		   			 							if (SmState ==  STATE_MOVINGX)
+		   			 							{
+		   			 								CDC_Transmit_FS(respostas_moveX.status ,5);
+		   			 							}
+				   								break;
+							 		case CMD_STEPQ:
+												CDC_Transmit_FS(respostas_moveX.step ,5);
+												osDelay(2);
+												break;
+							 		case CMD_SSTEP:
+												CDC_Transmit_FS(respostas_moveX.set_step ,5);
+												osDelay(2);
+												break;
+				   			  		default:
+				   			  					CDC_Transmit_FS(respostas_standby.wtf,4);
+				   			}
+			}
+	}
+}
+
 void ouvirTask(void const * argument)
 {
 
-	 // Criar semáfaro binário
-	 // Esse semáfaro recebe sinal do callback CDC_Receive_FS
 	while(1)
 	{
 		osDelay(1);
+		interfaceDuranteMovimento();
 	}
   /* init code for USB_DEVICE */
 

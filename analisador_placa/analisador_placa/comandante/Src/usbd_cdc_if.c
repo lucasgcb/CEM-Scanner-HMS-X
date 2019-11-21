@@ -267,7 +267,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   xSemaphoreGiveFromISR(semafaroUsb, &xHigherPriorityTaskWoken );
-  memcpy(buffer_usb, Buf, 11);
+  memcpy(buffer_usb, Buf, 16);
   return (USBD_OK);
   /* USER CODE END 6 */
 }

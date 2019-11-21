@@ -62,7 +62,7 @@
 
 
 SemaphoreHandle_t semafaroUsb;
-uint8_t buffer_usb[12];
+uint8_t buffer_usb[16];
 /**
 \page cmsis_os_h Header File Template: cmsis_os.h
 
