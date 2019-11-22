@@ -27,9 +27,12 @@ def interrupt_instrument(instrument,interface):
     instrument.close()
     raise Interrupt_Error
 
+def extrair_recurso(texto):
+    import re 
+    return re.search(r'(\w*::\w*)', texto).group(0)
 
 def instrument_setup(Instrument,freq,interface):
-    instrument = Instrument(interface.box_instrumento.currentText())
+    instrument = Instrument(extrair_recurso(interface.box_instrumento.currentText()))
     instrument.activate_mode_receiver()
     instrument.write('RMOD:FREQ {}'.format(freq))
     time.sleep(0.5)

@@ -29,8 +29,10 @@
 #define CMD_STAT 3
 #define CMD_MOVX 4
 #define CMD_MOVY 5
-#define CMD_SSTEP 6
-#define CMD_STEPQ 7
+#define CMD_SSTEPX 6
+#define CMD_STEPQX 7
+#define CMD_SSTEPY 8
+#define CMD_STEPQY 9
 /// TODOZAO
 /// SEPARAR ESTADOS INTERFACE E ESTADOS ACAO
 /// EH ISSO AI MSM
@@ -70,11 +72,14 @@ void ouvirTask(void const * argument);
 void maquina(void const * argument);
 void Rodar_Maquina(void);
 void interfaceDuranteMovimento();
-void enviarPassos(void);
+void enviarPassos(uint32_t);
+void  setStepY(uint8_t* comandoCompleto);
+void  setStepX(uint8_t* comandoCompleto);
 uint8_t interpretarSerial(uint8_t  *);
 uint8_t movimentos_em_x = 0;
 uint8_t movimentos_em_y = 0;
-uint32_t step_atual = 6969;
+uint32_t step_atualX = 6969;
+uint32_t step_atualY = 9696;
 typedef struct Comandos
 {
 	uint8_t conectar[8];
@@ -82,8 +87,10 @@ typedef struct Comandos
 	uint8_t moverX[6];
 	uint8_t moverY[6];
 	uint8_t status[8];
-	uint8_t set_step[8];
-	uint8_t step[8];
+	uint8_t set_stepX[8];
+	uint8_t stepX[8];
+	uint8_t set_stepY[8];
+	uint8_t stepY[8];
 	uint8_t identificar[8];
 } Comandos;
 typedef struct Respostas
@@ -94,8 +101,10 @@ typedef struct Respostas
 	uint8_t moverY[6];
 	uint8_t status[8];
 	uint8_t identificar[8];
-	uint8_t set_step[8];
-	uint8_t step[8];
+	uint8_t set_stepX[8];
+	uint8_t stepX[8];
+	uint8_t set_stepY[8];
+	uint8_t stepY[8];
 	uint8_t wtf[8];
 } Respostas;
 
@@ -104,19 +113,23 @@ Respostas respostas_disconnected = {"YES_CON",
 																  "DISC",
 																  "DISC",
 																  "DISC",
-																  "CMDR!",
-																  "NCONN",
+																  "CMDR!\n",
+																  "DISC",
+																  "DISC",
+																  "DISC",
 																  "DISC",
 																  "wtf!"};
 
-Respostas respostas_standby = {"ALR_CON",
+ Respostas respostas_standby = {"ALR_CON",
 														 "YES_DIS",
 														  "MOVX",
 														  "MOVY",
 														  "STBY",
-														  "CMDR!",
-														  "STEP:",
-														  "STEP:",
+														  "CMDR!\n",
+														  "STEPX",
+														  "STEPX",
+														  "STEPY",
+														  "STEPY",
 														  "wtf!"};
 
 Respostas respostas_moveX = {"ALR_CON",
@@ -127,6 +140,8 @@ Respostas respostas_moveX = {"ALR_CON",
 														  "CMDR!",
 														  "BUSY!",
 														  "BUSY!",
+														  "BUSY!",
+														  "BUSY!",
 														  "wtf!"};
 
 Respostas respostas_moveY = {"ALR_CON",
@@ -134,19 +149,23 @@ Respostas respostas_moveY = {"ALR_CON",
 														  "BUSY",
 														  "BUSY",
 														  "MOVY",
-														  "CMDR!",
+														  "CMDR!\n",
+														  "BUSY!",
+														  "BUSY!",
 														  "BUSY!",
 														  "BUSY!",
 														  "wtf!"};
 
 
-Comandos comandos = {"*CONN?",
+const Comandos comandos = {"*CONN?",
 											  "*DISC",
 											  "*MOVX",
 											  "*MOVY",
 											  "*STAT?",
-											  "*SSTEP",
-											  "*STEP?",
+											  "*SSTPX",
+											  "*STPX?",
+											  "*SSTPY",
+											  "*STPY?",
 											  "*IDN?"};
 
 
@@ -194,7 +213,7 @@ StateMachineType StateMachine[] =
 };
 
 StateType SmState = STATE_DISCONNECTED;
-void enviarPassos()
+void enviarPassos(uint32_t step)
 {
 	char temp[33];
 	uint8_t temp2[33];
@@ -204,7 +223,7 @@ void enviarPassos()
 			temp2[i]=0;
 			temp[i]=0;
 	}
-	itoa(step_atual,temp,10);
+	itoa(step,temp,10);
 	for (int i=0; i<33; i++)
 	{
 		    if(temp[i]!=0)
@@ -216,7 +235,7 @@ void enviarPassos()
 	CDC_Transmit_FS(temp2,buff_size);
 }
 
-void setPassos(uint8_t* comandoCompleto)
+void  setStepX(uint8_t* comandoCompleto)
 {
 	char temp[33];
 	uint8_t errstep[9] = {"ERRSTEP",};
@@ -240,9 +259,33 @@ void setPassos(uint8_t* comandoCompleto)
 
 			temp[i-7]=comandoCompleto[i];
 	}
-	step_atual = atoi(temp);
-	enviarPassos();
+	step_atualX =  atoi(temp);
+}
+void  setStepY(uint8_t* comandoCompleto)
+{
+	char temp[33];
+	uint8_t errstep[9] = {"ERRSTEP",};
+	osDelay(1);
+	for (int i=0; i<8; i++)
+	{
+			temp[i]=0;
+	}
+	for (int i=7; i<16; i++)
+	{
+			if(comandoCompleto[i]==')')
+			{
+				temp[i-7] = '\0';
+				break;
+			}
+			if(48 > comandoCompleto[i] || 57< comandoCompleto[i])
+			{
+				CDC_Transmit_FS(errstep, 8);
+				return;
+			}
 
+			temp[i-7]=comandoCompleto[i];
+	}
+	step_atualY =  atoi(temp);
 }
 uint8_t interpretarSerial(uint8_t  *entrada)
 {
@@ -258,10 +301,14 @@ uint8_t interpretarSerial(uint8_t  *entrada)
 		 return CMD_MOVY;
 	  if(memcmp(entrada,comandos.status,5)==0 )
 		 return CMD_STAT;
-	  if(memcmp(entrada,comandos.step,5)==0 )
-	  	return CMD_STEPQ;
-	  if(memcmp(entrada,comandos.set_step,5)==0 )
-	  	 return CMD_SSTEP;
+	  if(memcmp(entrada,comandos.stepX,5)==0 )
+	  	return CMD_STEPQX;
+	  if(memcmp(entrada,comandos.set_stepX,6)==0 )
+	  	 return CMD_SSTEPX;
+	  if(memcmp(entrada,comandos.set_stepY,6)==0 )
+	  	 return CMD_SSTEPY;
+	  if(memcmp(entrada,comandos.stepY,5)==0 )
+	  	 return CMD_STEPQY;
 	  return -1;
 }
 
@@ -282,15 +329,15 @@ void Sm_DISCONNECTED(void)
 			  switch(resposta)
 			  {
 			  		case CMD_ID:
-			  					CDC_Transmit_FS(respostas_disconnected.identificar ,4);
+			  					CDC_Transmit_FS(respostas_disconnected.identificar ,6);
 			  					SmState = STATE_DISCONNECTED;
 			  					break;
 			  		case CMD_CO:
-			  					CDC_Transmit_FS(respostas_disconnected.conectar ,5);
+			  					CDC_Transmit_FS(respostas_disconnected.conectar ,7);
 			  					SmState = STATE_STANDBY;
 			  					break;
 			  		case CMD_DC:
-			  					CDC_Transmit_FS(respostas_disconnected.desconectar ,5);
+			  					CDC_Transmit_FS(respostas_disconnected.desconectar ,4);
 								SmState = STATE_DISCONNECTED;
 								break;
 			 		case CMD_MOVX:
@@ -305,14 +352,20 @@ void Sm_DISCONNECTED(void)
 								CDC_Transmit_FS(respostas_disconnected.status ,4);
 								SmState = STATE_DISCONNECTED;
 								break;
-			 		case CMD_STEPQ:
-								CDC_Transmit_FS(respostas_disconnected.step ,5);
-								osDelay(2);
+			 		case CMD_STEPQX:
+								CDC_Transmit_FS(respostas_disconnected.stepX ,5);
 								SmState = STATE_DISCONNECTED;
 								break;
-			 		case CMD_SSTEP:
-								CDC_Transmit_FS(respostas_disconnected.set_step ,5);
-								osDelay(2);
+			 		case CMD_SSTEPX:
+								CDC_Transmit_FS(respostas_disconnected.set_stepX ,5);
+								SmState = STATE_DISCONNECTED;
+								break;
+			 		case CMD_STEPQY:
+								CDC_Transmit_FS(respostas_disconnected.stepY ,5);
+								SmState = STATE_DISCONNECTED;
+								break;
+			 		case CMD_SSTEPY:
+								CDC_Transmit_FS(respostas_disconnected.set_stepY ,5);
 								SmState = STATE_DISCONNECTED;
 								break;
 			  		default:
@@ -338,41 +391,54 @@ void Sm_STANDBY(void)
 		     switch(resposta)
 		   			  {
 		   			  		case CMD_ID:
-		   			  					CDC_Transmit_FS(respostas_standby.identificar ,5);
+		   			  					CDC_Transmit_FS(respostas_standby.identificar ,6);
 		   			  					SmState = STATE_STANDBY;
 		   			  					break;
 		   			  		case CMD_CO:
-		   			  					CDC_Transmit_FS(respostas_standby.conectar ,5);
+		   			  					CDC_Transmit_FS(respostas_standby.conectar ,7);
 		   			  					SmState = STATE_STANDBY;
 		   			  					break;
 		   			  		case CMD_DC:
-		   			  					CDC_Transmit_FS(respostas_standby.desconectar ,5);
+		   			  					CDC_Transmit_FS(respostas_standby.desconectar ,7);
 		   								SmState = STATE_DISCONNECTED;
 		   								break;
 		   			 		case CMD_MOVX:
 		   								CDC_Transmit_FS(respostas_standby.moverX ,4);
-										movimentos_em_x = 1 * step_atual;
+										movimentos_em_x = 1 * step_atualX;
 		   								SmState = STATE_MOVINGX;
 		   								break;
 		   			 		case CMD_MOVY:
 		   								CDC_Transmit_FS(respostas_standby.moverY ,4);
-		   								movimentos_em_y = 1 * step_atual;
+		   								movimentos_em_y = 1 * step_atualY;
 		   								SmState = STATE_MOVINGY;
 		   								break;
 		   			 		case CMD_STAT:
 		   								CDC_Transmit_FS(respostas_standby.status ,4);
 		   								SmState = STATE_STANDBY;
 		   								break;
-					 		case CMD_STEPQ:
-										CDC_Transmit_FS(respostas_standby.step ,5);
+					 		case CMD_STEPQX:
+										//CDC_Transmit_FS(respostas_standby.stepX ,5);
 										osDelay(2);
-										enviarPassos();
+										enviarPassos(step_atualX);
 										SmState = STATE_STANDBY;
 										break;
-					 		case CMD_SSTEP:
-										CDC_Transmit_FS(respostas_standby.set_step ,5);
+					 		case CMD_SSTEPX:
+										//CDC_Transmit_FS(respostas_standby.set_stepX ,5);
+										setStepX(temp);
 										osDelay(2);
-										setPassos(temp);
+										enviarPassos(step_atualX);
+										SmState = STATE_STANDBY;
+										break;
+					 		case CMD_STEPQY:
+										//CDC_Transmit_FS(respostas_standby.stepY ,5);
+										osDelay(2);
+										enviarPassos(step_atualY);
+										break;
+					 		case CMD_SSTEPY:
+										//CDC_Transmit_FS(respostas_standby.set_stepY,5);
+										setStepY(temp);
+										osDelay(2);
+										enviarPassos(step_atualY);
 										SmState = STATE_STANDBY;
 										break;
 		   			  		default:
@@ -414,6 +480,8 @@ void Sm_MOVINGY(void)
 
 void Sm_ERR(void)
 {
+	uint8_t err[4] = "err";
+	CDC_Transmit_FS(err,3);
 	SmState = STATE_STANDBY;
 }
 
@@ -641,12 +709,12 @@ void interfaceDuranteMovimento()
 		   			 								CDC_Transmit_FS(respostas_moveX.status ,5);
 		   			 							}
 				   								break;
-							 		case CMD_STEPQ:
-												CDC_Transmit_FS(respostas_moveX.step ,5);
+							 		case CMD_STEPQX:
+												CDC_Transmit_FS(respostas_moveX.stepX ,5);
 												osDelay(2);
 												break;
-							 		case CMD_SSTEP:
-												CDC_Transmit_FS(respostas_moveX.set_step ,5);
+							 		case CMD_SSTEPX:
+												CDC_Transmit_FS(respostas_moveX.set_stepX ,5);
 												osDelay(2);
 												break;
 				   			  		default:

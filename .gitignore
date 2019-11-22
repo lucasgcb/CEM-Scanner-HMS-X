@@ -111,3 +111,4 @@ dmypy.json
 # End of https://www.gitignore.io/api/python
 Sweep_exemplo/.vscode/settings.json
 analisador_placa/analisador_placa/janela.pyproject.user
+analisador_placa/analisador_placa/.vscode/launch.json
