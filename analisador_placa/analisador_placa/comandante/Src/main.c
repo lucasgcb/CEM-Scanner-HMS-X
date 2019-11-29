@@ -36,6 +36,11 @@
 #define CMD_STEPQX 7
 #define CMD_SSTEPY 8
 #define CMD_STEPQY 9
+#define FORWARD_X 1
+#define BACK_X 0
+#define FORWARD_Y 0
+#define BACK_Y 1
+
 
 /// TODOZAO
 /// SEPARAR ESTADOS INTERFACE E ESTADOS ACAO
@@ -82,10 +87,10 @@ void  setStepX(uint8_t* comandoCompleto);
 uint8_t interpretarSerial(uint8_t  *);
 uint32_t movimentos_em_x = 0;
 uint32_t movimentos_em_y = 0;
-uint8_t dirY = 1;
-uint8_t dirX = 1;
-uint32_t step_atualX = 10;
-uint32_t step_atualY = 10;
+uint8_t dirY = FORWARD_Y;
+uint8_t dirX = FORWARD_X;
+uint32_t step_atualX = 200;
+uint32_t step_atualY = 200;
 typedef struct Comandos
 {
 	uint8_t conectar[8];
@@ -438,25 +443,25 @@ void Sm_STANDBY(void)
 		   								break;
 		   			 		case CMD_MOVX:
 		   								CDC_Transmit_FS(respostas_standby.moverX ,4);
-		   								dirX = 1;
+		   								dirX = FORWARD_X;
 		   								movimentos_em_x = 1 * step_atualX;
 		   								SmState = STATE_MOVINGX;
 		   								break;
 		   			 		case CMD_MOVY:
 		   								CDC_Transmit_FS(respostas_standby.moverY ,4);
-		   								dirY = 1;
+		   								dirY = FORWARD_Y;
 		   								movimentos_em_y = 1 * step_atualY;
 		   								SmState = STATE_MOVINGY;
 		   								break;
 					 		case CMD_MOVX_NEG:
 										CDC_Transmit_FS(respostas_standby.moverX ,4);
-										dirX = 0;
+										dirX = BACK_X;
 										movimentos_em_x = 1 * step_atualX;
 										SmState = STATE_MOVINGX;
 										break;
 					 		case CMD_MOVY_NEG:
 										CDC_Transmit_FS(respostas_standby.moverY ,4);
-										dirY = 0;
+										dirY = BACK_Y;
 										movimentos_em_y = 1 * step_atualY;
 										SmState = STATE_MOVINGY;
 										break;
@@ -500,10 +505,10 @@ void Sm_MOVINGX(void)
 	uint8_t fim[6] = "MVXOK";
 	switch(dirX)
 	{
-		case 1:
+		case BACK_X:
 			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_DIR_Pin, GPIO_PIN_SET);
 			break;
-		case 0:
+		case FORWARD_X:
 			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_DIR_Pin, GPIO_PIN_RESET);
 			break;
 		default:
@@ -532,10 +537,10 @@ void Sm_MOVINGY(void)
 	uint8_t fim[6] = "MVYOK";
 	switch(dirY)
 	{
-		case 1:
+		case BACK_Y:
 			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR2_DIR_Pin, GPIO_PIN_SET);
 			break;
-		case 0:
+		case FORWARD_Y:
 			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR2_DIR_Pin, GPIO_PIN_RESET);
 			break;
 		default:
