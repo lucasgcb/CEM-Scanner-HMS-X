@@ -6,6 +6,16 @@ def identificar(gerente,recurso,interface):
         identificador = inst.query("*IDN?").split(',')
         if(identificador[0]=="HAMEG" and identificador[1]=="HMS-X"):
             interface.box_instrumento.addItem("HAMEG HMS-X (" + str(recurso) + ")")
+        else:
+            ## Tentar serial se tiver uma resposta, mas que está estranha
+            inst.close()
+            porta_do_recurso = re.search('(COM\d*)',str(recurso)).group(0)
+            ser = serial.Serial(porta_do_recurso)
+            ser.write(b'*IDN?')     # write a string
+            identificador = [ser.readline()]
+            ser.close()
+            if(identificador[0]==b"CMDR!\n"):
+                interface.box_controlador.addItem("Comandante (" + str(recurso) + ")")
         inst.close()
     except Exception:
         ## Não atende o requerimento da API VISA.. tentar comunicar serial direto msm

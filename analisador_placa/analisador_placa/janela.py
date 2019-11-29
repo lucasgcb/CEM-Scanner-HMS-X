@@ -111,7 +111,7 @@ class janela(QMainWindow):
         interface_matrix_start(self.interface)
         self.wid = PySide2.QtWidgets.QWidget()
         self.wid.resize(250, 150)
-        self.wid.setWindowTitle('NewWindow')
+        self.wid.setWindowTitle('Xablau')
         self.wid.show()
         self.wid.installEventFilter(self)
     
