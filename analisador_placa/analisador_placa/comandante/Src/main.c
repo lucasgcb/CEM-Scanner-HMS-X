@@ -1,4 +1,6 @@
 
+
+
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
@@ -121,53 +123,53 @@ typedef struct Respostas
 	uint8_t wtf[8];
 } Respostas;
 
-Respostas respostas_disconnected = {"YES_CON",
-																  "DISC",
-																  "DISC",
-																  "DISC",
-																  "DISC",
+Respostas respostas_disconnected = {"YES_CO\n",
+																  "DISC\n",
+																  "DISC\n",
+																  "DISC\n",
+																  "DISC\n",
 																  "CMDR!\n",
-																  "DISC",
-																  "DISC",
-																  "DISC",
-																  "DISC",
-																  "wtf!"};
+																  "DISC\n",
+																  "DISC\n",
+																  "DISC\n",
+																  "DISC\n",
+																  "wtf!\n"};
 
- Respostas respostas_standby = {"ALR_CON",
-														 "YES_DIS",
-														  "MOVX",
-														  "MOVY",
-														  "STBY",
+ Respostas respostas_standby = {"ALR_CO\n",
+														 "YES_DC\n",
+														  "MVX\n",
+														  "MVY\n",
+														  "STBY\n",
 														  "CMDR!\n",
-														  "STEPX",
-														  "STEPX",
-														  "STEPY",
-														  "STEPY",
-														  "wtf!"};
+														  "STEPX\n",
+														  "STEPX\n",
+														  "STEPY\n",
+														  "STEPY\n",
+														  "wtf!\n"};
 
-Respostas respostas_moveX = {"ALR_CON",
-														 "YES_DIS",
-														  "BUSY",
-														  "BUSY",
-														  "MOVX",
-														  "CMDR!",
-														  "BUSY!",
-														  "BUSY!",
-														  "BUSY!",
-														  "BUSY!",
-														  "wtf!"};
-
-Respostas respostas_moveY = {"ALR_CON",
-														 "YES_DIS",
-														  "BUSY",
-														  "BUSY",
-														  "MOVY",
+Respostas respostas_moveX = {"ALR_CO\n",
+														 "YES_DC\n",
+														  "BUSY\n",
+														  "BUSY\n",
+														  "MVX\n",
 														  "CMDR!\n",
-														  "BUSY!",
-														  "BUSY!",
-														  "BUSY!",
-														  "BUSY!",
-														  "wtf!"};
+														  "BUSY!\n",
+														  "BUSY!\n",
+														  "BUSY!\n",
+														  "BUSY!\n",
+														  "wtf!\n"};
+
+Respostas respostas_moveY = {"ALR_CO\n",
+														 "YES_DC\n",
+														  "BUSY\n",
+														  "BUSY\n",
+														  "MVY\n",
+														  "CMDR!\n",
+														  "BUSY!\n",
+														  "BUSY!\n",
+														  "BUSY!\n",
+														  "BUSY!\n",
+														  "wtf!\n"};
 
 
 const Comandos comandos = {"*CONN?",
@@ -186,25 +188,7 @@ const Comandos comandos = {"*CONN?",
 
 
 
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_Pin|STEP_MOTOR1_DIR_Pin|STEP_MOTOR2_Pin|STEP_MOTOR2_DIR_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : STEP_MOTOR1_Pin STEP_MOTOR1_DIR_Pin STEP_MOTOR2_Pin STEP_MOTOR2_DIR_Pin */
-  GPIO_InitStruct.Pin = STEP_MOTOR1_Pin|STEP_MOTOR1_DIR_Pin|STEP_MOTOR2_Pin|STEP_MOTOR2_DIR_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-}
 // Define States
 typedef enum
 {
@@ -245,13 +229,14 @@ void enviarPassos(uint32_t step)
 	char temp[33];
 	uint8_t temp2[33];
 	uint8_t buff_size = 0;
-	for (int i=0; i<33; i++)
+	uint8_t i = 0;
+	for (i=0; i<32; i++)
 	{
 			temp2[i]=0;
 			temp[i]=0;
 	}
 	itoa(step,temp,10);
-	for (int i=0; i<33; i++)
+	for (i=0; i<32; i++)
 	{
 		    if(temp[i]!=0)
 		    {
@@ -259,13 +244,14 @@ void enviarPassos(uint32_t step)
 		    }
 			temp2[i]=temp[i];
 	}
-	CDC_Transmit_FS(temp2,buff_size);
+	temp2[buff_size] = '\n';
+	CDC_Transmit_FS(temp2,buff_size+1);
 }
 
 void  setStepX(uint8_t* comandoCompleto)
 {
 	char temp[33];
-	uint8_t errstep[9] = {"ERRSTEP",};
+	uint8_t errstep[9] = {"ERSTEP\n",};
 	osDelay(1);
 	for (int i=0; i<8; i++)
 	{
@@ -291,7 +277,7 @@ void  setStepX(uint8_t* comandoCompleto)
 void  setStepY(uint8_t* comandoCompleto)
 {
 	char temp[33];
-	uint8_t errstep[9] = {"ERRSTEP",};
+	uint8_t errstep[9] = {"ERSTEP\n",};
 	osDelay(1);
 	for (int i=0; i<8; i++)
 	{
@@ -345,8 +331,8 @@ uint8_t interpretarSerial(uint8_t  *entrada)
 
 void Sm_DISCONNECTED(void)
 {
-
-	 uint8_t temp[16]="ue";
+	 HAL_GPIO_WritePin(LED_STANDBY_GPIO_Port, LED_STANDBY_Pin, GPIO_PIN_SET);
+	 uint8_t temp[16]="ue\n";
 	 uint8_t resposta = -1;
 	 if( xSemaphoreTake( semafaroUsb ,10000) == pdTRUE )
 	 {
@@ -368,7 +354,7 @@ void Sm_DISCONNECTED(void)
 			  					SmState = STATE_STANDBY;
 			  					break;
 			  		case CMD_DC:
-			  					CDC_Transmit_FS(respostas_disconnected.desconectar ,4);
+			  					CDC_Transmit_FS(respostas_disconnected.desconectar ,7);
 								SmState = STATE_DISCONNECTED;
 								break;
 			 		case CMD_MOVX:
@@ -388,7 +374,7 @@ void Sm_DISCONNECTED(void)
 								SmState = STATE_DISCONNECTED;
 								break;
 			 		case CMD_STAT:
-								CDC_Transmit_FS(respostas_disconnected.status ,4);
+								CDC_Transmit_FS(respostas_disconnected.status ,5);
 								SmState = STATE_DISCONNECTED;
 								break;
 			 		case CMD_STEPQX:
@@ -408,13 +394,14 @@ void Sm_DISCONNECTED(void)
 								SmState = STATE_DISCONNECTED;
 								break;
 			  		default:
-			  					CDC_Transmit_FS(respostas_disconnected.wtf,4);
+			  					CDC_Transmit_FS(respostas_disconnected.wtf,5);
 			  					SmState = STATE_DISCONNECTED;
 			}
 	}
 }
 void Sm_STANDBY(void)
 {
+	HAL_GPIO_WritePin(LED_STANDBY_GPIO_Port, LED_STANDBY_Pin, GPIO_PIN_RESET);
 	 uint8_t temp[16]="ue";
 	 uint8_t resposta = -1;
 	 if( xSemaphoreTake( semafaroUsb ,10000) == pdTRUE )
@@ -466,7 +453,7 @@ void Sm_STANDBY(void)
 										SmState = STATE_MOVINGY;
 										break;
 		   			 		case CMD_STAT:
-		   								CDC_Transmit_FS(respostas_standby.status ,4);
+		   								CDC_Transmit_FS(respostas_standby.status ,5);
 		   								SmState = STATE_STANDBY;
 		   								break;
 					 		case CMD_STEPQX:
@@ -495,14 +482,14 @@ void Sm_STANDBY(void)
 										SmState = STATE_STANDBY;
 										break;
 		   			  		default:
-		   			  					CDC_Transmit_FS(respostas_standby.wtf,4);
+		   			  					CDC_Transmit_FS(respostas_standby.wtf,5);
 		   			  					SmState = STATE_STANDBY;
 		   			}
 	}
 }
 void Sm_MOVINGX(void)
 {
-	uint8_t fim[6] = "MVXOK";
+	uint8_t fim[7] = "MVXOK\n";
 	switch(dirX)
 	{
 		case BACK_X:
@@ -512,7 +499,7 @@ void Sm_MOVINGX(void)
 			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_DIR_Pin, GPIO_PIN_RESET);
 			break;
 		default:
-			CDC_Transmit_FS(respostas_standby.wtf,4);
+			CDC_Transmit_FS(respostas_standby.wtf,5);
 	}
 	while(movimentos_em_x>0)
 	{
@@ -528,13 +515,13 @@ void Sm_MOVINGX(void)
 		//logica de fazer o bagulho
 		osDelay(1);
 	}
-	CDC_Transmit_FS(fim,5);
+	CDC_Transmit_FS(fim,6);
 	SmState = STATE_STANDBY;
 }
 
 void Sm_MOVINGY(void)
 {
-	uint8_t fim[6] = "MVYOK";
+	uint8_t fim[7] = "MVYOK\n";
 	switch(dirY)
 	{
 		case BACK_Y:
@@ -544,7 +531,7 @@ void Sm_MOVINGY(void)
 			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR2_DIR_Pin, GPIO_PIN_RESET);
 			break;
 		default:
-			CDC_Transmit_FS(respostas_standby.wtf,4);
+			CDC_Transmit_FS(respostas_standby.wtf,5);
 	}
 
 	while(movimentos_em_y>0)
@@ -558,7 +545,7 @@ void Sm_MOVINGY(void)
 		//logica de fazer o bagulho
 		osDelay(1);
 	}
-	CDC_Transmit_FS(fim,5);
+	CDC_Transmit_FS(fim,6);
 	SmState = STATE_STANDBY;
 }
 
@@ -581,6 +568,40 @@ void Rodar_Maquina(void)
 		return;
 	}
 }
+
+
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED_STANDBY_GPIO_Port, LED_STANDBY_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_Pin|STEP_MOTOR1_DIR_Pin|STEP_MOTOR2_Pin|STEP_MOTOR2_DIR_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : LED_STANDBY_Pin */
+  GPIO_InitStruct.Pin = LED_STANDBY_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_STANDBY_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : STEP_MOTOR1_Pin STEP_MOTOR1_DIR_Pin STEP_MOTOR2_Pin STEP_MOTOR2_DIR_Pin */
+  GPIO_InitStruct.Pin = STEP_MOTOR1_Pin|STEP_MOTOR1_DIR_Pin|STEP_MOTOR2_Pin|STEP_MOTOR2_DIR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+}
+
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -803,7 +824,7 @@ void interfaceDuranteMovimento()
 												osDelay(2);
 												break;
 				   			  		default:
-				   			  					CDC_Transmit_FS(respostas_standby.wtf,4);
+				   			  					CDC_Transmit_FS(respostas_standby.wtf,5);
 				   			}
 			}
 	}
@@ -890,6 +911,9 @@ void assert_failed(uint8_t *file, uint32_t line)
 #endif /* USE_FULL_ASSERT */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+
+
 
 
 
