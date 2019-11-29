@@ -28,10 +28,12 @@ def detect(interface,semafaro,running):
         if running.is_set() is False:
             return
         interface.label_instrumento.setText("Atualizando...")
+        #Limpa a lista de items
         for i in range(0,interface.box_instrumento.count()+1):
             interface.box_instrumento.removeItem(i)
         for i in range(0,interface.box_controlador.count()+1):
             interface.box_controlador.removeItem(i)
+            
         resources = manager.list_resources()
         print(resources)       
         if len(resources) == 0:

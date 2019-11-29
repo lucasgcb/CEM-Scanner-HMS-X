@@ -28,6 +28,7 @@ def interrupt_instrument(instrument,interface):
     raise Interrupt_Error
 
 def extrair_recurso(texto):
+    ### Extrai o nome do recurso do combobox
     import re 
     return re.search(r'(\w*::\w*)', texto).group(0)
 

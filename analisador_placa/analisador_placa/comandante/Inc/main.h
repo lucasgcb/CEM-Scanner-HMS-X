@@ -58,6 +58,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define STEP_MOTOR1_Pin GPIO_PIN_0
+#define STEP_MOTOR1_GPIO_Port GPIOA
+#define STEP_MOTOR1_DIR_Pin GPIO_PIN_1
+#define STEP_MOTOR1_DIR_GPIO_Port GPIOA
+#define STEP_MOTOR2_Pin GPIO_PIN_2
+#define STEP_MOTOR2_GPIO_Port GPIOA
+#define STEP_MOTOR2_DIR_Pin GPIO_PIN_3
+#define STEP_MOTOR2_DIR_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

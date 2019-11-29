@@ -1,3 +1,4 @@
+
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
@@ -28,11 +29,14 @@
 #define CMD_ID 2
 #define CMD_STAT 3
 #define CMD_MOVX 4
+#define CMD_MOVX_NEG 10
 #define CMD_MOVY 5
+#define CMD_MOVY_NEG 11
 #define CMD_SSTEPX 6
 #define CMD_STEPQX 7
 #define CMD_SSTEPY 8
 #define CMD_STEPQY 9
+
 /// TODOZAO
 /// SEPARAR ESTADOS INTERFACE E ESTADOS ACAO
 /// EH ISSO AI MSM
@@ -76,16 +80,20 @@ void enviarPassos(uint32_t);
 void  setStepY(uint8_t* comandoCompleto);
 void  setStepX(uint8_t* comandoCompleto);
 uint8_t interpretarSerial(uint8_t  *);
-uint8_t movimentos_em_x = 0;
-uint8_t movimentos_em_y = 0;
-uint32_t step_atualX = 6969;
-uint32_t step_atualY = 9696;
+uint32_t movimentos_em_x = 0;
+uint32_t movimentos_em_y = 0;
+uint8_t dirY = 1;
+uint8_t dirX = 1;
+uint32_t step_atualX = 10;
+uint32_t step_atualY = 10;
 typedef struct Comandos
 {
 	uint8_t conectar[8];
 	uint8_t desconectar[8];
 	uint8_t moverX[6];
+	uint8_t moverX_neg[6];
 	uint8_t moverY[6];
+	uint8_t moverY_neg[6];
 	uint8_t status[8];
 	uint8_t set_stepX[8];
 	uint8_t stepX[8];
@@ -159,8 +167,10 @@ Respostas respostas_moveY = {"ALR_CON",
 
 const Comandos comandos = {"*CONN?",
 											  "*DISC",
-											  "*MOVX",
-											  "*MOVY",
+											  "*MOVX+",
+											  "*MOVX-",
+											  "*MOVY+",
+											  "*MOVY-",
 											  "*STAT?",
 											  "*SSTPX",
 											  "*STPX?",
@@ -169,15 +179,27 @@ const Comandos comandos = {"*CONN?",
 											  "*IDN?"};
 
 
- static void MX_GPIO_Init(void)
+
+
+static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
-}
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_Pin|STEP_MOTOR1_DIR_Pin|STEP_MOTOR2_Pin|STEP_MOTOR2_DIR_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pins : STEP_MOTOR1_Pin STEP_MOTOR1_DIR_Pin STEP_MOTOR2_Pin STEP_MOTOR2_DIR_Pin */
+  GPIO_InitStruct.Pin = STEP_MOTOR1_Pin|STEP_MOTOR1_DIR_Pin|STEP_MOTOR2_Pin|STEP_MOTOR2_DIR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+}
 // Define States
 typedef enum
 {
@@ -295,10 +317,14 @@ uint8_t interpretarSerial(uint8_t  *entrada)
 		 return CMD_CO;
 	  if(memcmp(entrada,comandos.desconectar,5)==0 )
 		 return CMD_DC;
-	  if(memcmp(entrada,comandos.moverX,5)==0 )
+	  if(memcmp(entrada,comandos.moverX,6)==0 )
 		 return CMD_MOVX;
-	  if(memcmp(entrada,comandos.moverY,5)==0 )
+	  if(memcmp(entrada,comandos.moverY,6)==0 )
 		 return CMD_MOVY;
+	  if(memcmp(entrada,comandos.moverX_neg,6)==0 )
+		 return CMD_MOVX_NEG;
+	  if(memcmp(entrada,comandos.moverY_neg,6)==0 )
+		 return CMD_MOVY_NEG;
 	  if(memcmp(entrada,comandos.status,5)==0 )
 		 return CMD_STAT;
 	  if(memcmp(entrada,comandos.stepX,5)==0 )
@@ -345,6 +371,14 @@ void Sm_DISCONNECTED(void)
 								SmState = STATE_DISCONNECTED;
 								break;
 			 		case CMD_MOVY:
+								CDC_Transmit_FS(respostas_disconnected.moverY ,4);
+								SmState = STATE_DISCONNECTED;
+								break;
+			 		case CMD_MOVX_NEG:
+								CDC_Transmit_FS(respostas_disconnected.moverX ,4);
+								SmState = STATE_DISCONNECTED;
+								break;
+			 		case CMD_MOVY_NEG:
 								CDC_Transmit_FS(respostas_disconnected.moverY ,4);
 								SmState = STATE_DISCONNECTED;
 								break;
@@ -404,14 +438,28 @@ void Sm_STANDBY(void)
 		   								break;
 		   			 		case CMD_MOVX:
 		   								CDC_Transmit_FS(respostas_standby.moverX ,4);
-										movimentos_em_x = 1 * step_atualX;
+		   								dirX = 1;
+		   								movimentos_em_x = 1 * step_atualX;
 		   								SmState = STATE_MOVINGX;
 		   								break;
 		   			 		case CMD_MOVY:
 		   								CDC_Transmit_FS(respostas_standby.moverY ,4);
+		   								dirY = 1;
 		   								movimentos_em_y = 1 * step_atualY;
 		   								SmState = STATE_MOVINGY;
 		   								break;
+					 		case CMD_MOVX_NEG:
+										CDC_Transmit_FS(respostas_standby.moverX ,4);
+										dirX = 0;
+										movimentos_em_x = 1 * step_atualX;
+										SmState = STATE_MOVINGX;
+										break;
+					 		case CMD_MOVY_NEG:
+										CDC_Transmit_FS(respostas_standby.moverY ,4);
+										dirY = 0;
+										movimentos_em_y = 1 * step_atualY;
+										SmState = STATE_MOVINGY;
+										break;
 		   			 		case CMD_STAT:
 		   								CDC_Transmit_FS(respostas_standby.status ,4);
 		   								SmState = STATE_STANDBY;
@@ -450,11 +498,28 @@ void Sm_STANDBY(void)
 void Sm_MOVINGX(void)
 {
 	uint8_t fim[6] = "MVXOK";
+	switch(dirX)
+	{
+		case 1:
+			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_DIR_Pin, GPIO_PIN_SET);
+			break;
+		case 0:
+			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_DIR_Pin, GPIO_PIN_RESET);
+			break;
+		default:
+			CDC_Transmit_FS(respostas_standby.wtf,4);
+	}
 	while(movimentos_em_x>0)
 	{
 		movimentos_em_x--;
+		HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_Pin, GPIO_PIN_SET);
+		osDelay(1);
+		HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_Pin, GPIO_PIN_RESET);
 		if (SmState != STATE_MOVINGX)
+		{
+			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR1_Pin, GPIO_PIN_RESET);
 			return;
+		}
 		//logica de fazer o bagulho
 		osDelay(1);
 	}
@@ -465,9 +530,24 @@ void Sm_MOVINGX(void)
 void Sm_MOVINGY(void)
 {
 	uint8_t fim[6] = "MVYOK";
+	switch(dirY)
+	{
+		case 1:
+			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR2_DIR_Pin, GPIO_PIN_SET);
+			break;
+		case 0:
+			HAL_GPIO_WritePin(GPIOA, STEP_MOTOR2_DIR_Pin, GPIO_PIN_RESET);
+			break;
+		default:
+			CDC_Transmit_FS(respostas_standby.wtf,4);
+	}
+
 	while(movimentos_em_y>0)
 	{
 		movimentos_em_y--;
+		HAL_GPIO_WritePin(GPIOA, STEP_MOTOR2_Pin, GPIO_PIN_SET);
+		osDelay(1);
+		HAL_GPIO_WritePin(GPIOA, STEP_MOTOR2_Pin, GPIO_PIN_RESET);
 		if (SmState != STATE_MOVINGY)
 			return;
 		//logica de fazer o bagulho
@@ -805,3 +885,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 #endif /* USE_FULL_ASSERT */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+
+
+
