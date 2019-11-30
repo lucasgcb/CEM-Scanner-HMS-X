@@ -16,6 +16,7 @@ def interface_scan_start(interface):
 
 def get_commander_port(interface):
     ### Extrai o nome do recurso do combobox
+    ### O Recurso tem o padrao de COMd onde d é um digito.
     import re 
     txt = interface.box_controlador.currentText()
     return re.search(r'(COM\d*)', txt).group(0)

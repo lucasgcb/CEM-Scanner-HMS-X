@@ -6,7 +6,7 @@ from PySide2.QtCore import QFile
 from PySide2.QtCore import Slot
 import cmdrinterface
 
-#### TODOZAO: COLOCAR ESSA JOÇA EM THREAD PRA N TRAVAR DEPOIS DO JOVEM METER 999 EM UNIDADE E MORRER
+#### a fazer: COLOCAR ESSA JOÇA EM THREAD PRA N TRAVAR DEPOIS DO JOVEM METER 999 EM UNIDADE E MORRER
 
 class Programmer:
     def __init__(self):
@@ -18,7 +18,7 @@ class Programmer:
         ui_file.open(QFile.ReadOnly)
         self.wid = loader.load(ui_file)
         ui_file.close()
-        self.wid.setWindowTitle('Xablau')
+        self.wid.setWindowTitle('Calibrador')
         self.wid.show()
         self.wid.installEventFilter(self)
         
@@ -93,7 +93,7 @@ class Programmer:
         ui_file.open(QFile.ReadOnly)
         self.mvr = loader.load(ui_file)
         ui_file.close()
-        self.mvr.setWindowTitle('Xablau')
+        self.mvr.setWindowTitle('Mover')
         self.mvr.show()
         self.mvr.installEventFilter(self)
         

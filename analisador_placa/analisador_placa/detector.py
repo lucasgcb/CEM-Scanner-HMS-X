@@ -1,7 +1,11 @@
 def identificar(gerente,recurso,interface):
     import serial
     import re
-    inst = gerente.open_resource(recurso)
+    try:
+        inst = gerente.open_resource(recurso)
+    except SerialException:
+        interface.label_instrumento.setText("Erro na serial! tente replugar")
+
     try:
         identificador = inst.query("*IDN?").split(',')
         if(identificador[0]=="HAMEG" and identificador[1]=="HMS-X"):

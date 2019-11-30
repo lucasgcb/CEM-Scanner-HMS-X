@@ -106,6 +106,9 @@ class janela(QMainWindow, Programmer):
         ui_file = QFile("dialog.ui")
         ui_file.open(QFile.ReadOnly)
         self.interface = loader.load(ui_file)
+        self.interface.setWindowTitle('HMS-X Hameg Receiver Scanner ')
+        self.wid = None ##handler da mini janelinha de calibrar
+        self.mvr = None ##handler da mini janelinha de mover
         ui_file.close()
         super(janela, self).__init__()
 
