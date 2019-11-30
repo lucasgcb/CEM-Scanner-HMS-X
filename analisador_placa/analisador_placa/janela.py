@@ -1,10 +1,10 @@
 # This Python file uses the following encoding: utf-8
 import sys,os
 import PySide2
-
+from programmer import Programmer
 import threading
 from threading import Thread, active_count
-
+import cmdrinterface
 from PySide2.QtCore import QAbstractTableModel
 import PySide2.QtCore as QtCore
 from PySide2.QtUiTools import QUiLoader
@@ -16,7 +16,9 @@ from demo import scan
 from detector import detect
 from analisador import scan
 from datetime import datetime
-from interfacehandlers import get_filename, interface_error_msg, interface_update_filename,interface_matrix_end, interface_matrix_start
+from interfacehandlers import (get_filename, interface_error_msg, interface_update_filename,
+                              interface_matrix_end, interface_matrix_start, get_commander_port,
+                              interface_status_msg)
 from utility import model_to_csv
 
 class AlignDelegate(QItemDelegate):
@@ -96,7 +98,7 @@ class MyTableModel(QtCore.QAbstractTableModel):
         self.endInsertColumns()
         self.headerDataChanged.emit(QtCore.Qt.Horizontal,len(dataIn),0)
 
-class janela(QMainWindow):
+class janela(QMainWindow, Programmer):
     def __init__(self):
         loader = QUiLoader()
         dirname = os.path.dirname(os.path.abspath(__file__))
@@ -107,19 +109,18 @@ class janela(QMainWindow):
         ui_file.close()
         super(janela, self).__init__()
 
-    def newwindow(self):
-        interface_matrix_start(self.interface)
-        self.wid = PySide2.QtWidgets.QWidget()
-        self.wid.resize(250, 150)
-        self.wid.setWindowTitle('Xablau')
-        self.wid.show()
-        self.wid.installEventFilter(self)
-    
     def eventFilter(self, obj, event):
-        if obj is self.wid and event.type() == QtCore.QEvent.Close:
+        if (obj is self.wid or obj is self.mvr) and event.type() == QtCore.QEvent.Close:
             interface_matrix_end(self.interface)
+            try:
+                self.cmdr.close()
+            except Exception:
+                pass
             return True
-        return super(janela, self).eventFilter(obj, event)
+        try:
+            return super(janela, self).eventFilter(obj, event)
+        except RuntimeError:
+            return True
 
 class Gerente:
     def __init__(self,app,janela):
@@ -177,13 +178,18 @@ class Gerente:
 
         @Slot()
         def conf_matriz():
-            self.janela.newwindow()
+            self.janela.programmer()
+
+        @Slot()
+        def conf_posicao():
+            self.janela.mover()
 
         self.janela.interface.botao_vai.clicked.connect(go)
         self.janela.interface.botao_parar.clicked.connect(stop)
         self.janela.interface.botao_matriz.clicked.connect(conf_matriz)
         self.janela.interface.botao_instrumento.clicked.connect(detecting)
         self.janela.interface.botao_salvar.clicked.connect(salvar_manual)
+        self.janela.interface.botao_mover.clicked.connect(conf_posicao)
         
 
     def exec(self):

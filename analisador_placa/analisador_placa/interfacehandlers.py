@@ -14,6 +14,12 @@ def interface_scan_start(interface):
     interface_error_msg(interface," ")
     interface_status_msg(interface,"Iniciando...")
 
+def get_commander_port(interface):
+    ### Extrai o nome do recurso do combobox
+    import re 
+    txt = interface.box_controlador.currentText()
+    return re.search(r'(COM\d*)', txt).group(0)
+
 def interface_matrix_start(interface):
     interface.botao_vai.setEnabled(False)
     interface.botao_parar.setEnabled(False)

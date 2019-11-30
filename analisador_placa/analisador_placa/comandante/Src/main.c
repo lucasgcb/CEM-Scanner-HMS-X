@@ -91,8 +91,8 @@ uint32_t movimentos_em_x = 0;
 uint32_t movimentos_em_y = 0;
 uint8_t dirY = FORWARD_Y;
 uint8_t dirX = FORWARD_X;
-uint32_t step_atualX = 200;
-uint32_t step_atualY = 200;
+uint32_t step_atualX = 430;
+uint32_t step_atualY = 377;
 typedef struct Comandos
 {
 	uint8_t conectar[8];
@@ -501,6 +501,7 @@ void Sm_MOVINGX(void)
 		default:
 			CDC_Transmit_FS(respostas_standby.wtf,5);
 	}
+	movimentos_em_x++;
 	while(movimentos_em_x>0)
 	{
 		movimentos_em_x--;
@@ -534,6 +535,7 @@ void Sm_MOVINGY(void)
 			CDC_Transmit_FS(respostas_standby.wtf,5);
 	}
 
+	movimentos_em_y++;
 	while(movimentos_em_y>0)
 	{
 		movimentos_em_y--;
