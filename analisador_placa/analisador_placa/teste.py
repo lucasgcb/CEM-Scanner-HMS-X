@@ -22,7 +22,7 @@ b = ser.readline()
 time.sleep(0.2)
 print(b)
 for _ in range(0,20):
-ser.write(b'*MOVY-')     # write a string
+    ser.write(b'*MOVY-')     # write a string
 b = ser.readline()
 b = ser.readline()
 
