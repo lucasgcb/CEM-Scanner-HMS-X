@@ -4,6 +4,9 @@ The purpose of this interface is to make a specific type of measurement operatio
 
 - PyVISA
 - PySide
+- EasyDriver V44 A3967 + Step Motors
+- STM32F103C8T6 ("Bluepill" Schematic)
+
 
 ## Images
 
@@ -12,7 +15,8 @@ The purpose of this interface is to make a specific type of measurement operatio
 
 ![alt text](./images/Analisador2.PNG "Logo Title Text 1")
 
-#### Interface + HAMEG HMS-X Spectrum Analyzer 
+
+#### System + HAMEG HMS-X Spectrum Analyzer 
 
 ![alt text](./images/bancada.jpeg "Logo Title Text 1")
 
